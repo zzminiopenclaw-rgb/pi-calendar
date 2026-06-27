@@ -34,10 +34,6 @@ logger = logging.getLogger(__name__)
 class PiCalendarApp(App):
     """Main calendar application."""
     
-    CSS = """
-    /* Theme CSS will be injected at runtime */
-    """
-    
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("r", "refresh", "Refresh"),
@@ -54,13 +50,20 @@ class PiCalendarApp(App):
     all_events = reactive([])
     
     def __init__(self, config_path: str = "config/calendar.yaml"):
-        super().__init__()
+        # Load theme first
+        self.theme = Theme()
+        
+        # Generate CSS and save to temp file for Textual to load
+        css_content = self.theme.generate_css()
+        css_path = Path(__file__).parent / "theme_generated.css"
+        css_path.write_text(css_content)
+        
+        # Initialize app with CSS path
+        super().__init__(css_path=str(css_path))
+        
         self.config = Config(config_path)
         self.cache = EventCache(self.config.cache_db_path)
         self.fetcher = EventFetcher(self.cache, self.config._data.get("refresh", {}).get("timeout_seconds", 30))
-        self.theme = Theme()
-        # Inject theme CSS
-        self.CSS = self.theme.generate_css()
     
     def compose(self) -> ComposeResult:
         # ASCII Art Header

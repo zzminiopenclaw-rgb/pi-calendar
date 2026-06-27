@@ -58,7 +58,8 @@ class PiCalendarApp(App):
         css_path = Path(__file__).parent / "theme_generated.css"
         css_path.write_text(css_content)
         
-        # Initialize app with CSS path only (theme via CSS)
+        # Initialize app with CSS path - need to set theme before super().__init__
+        self.theme = "textual-dark"  # Prevent NoneType error in Textual
         super().__init__(css_path=str(css_path))
         
         self.config = Config(config_path)

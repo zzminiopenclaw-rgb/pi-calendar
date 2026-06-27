@@ -1,0 +1,24 @@
+# iCal sources — add your shared calendar URLs here
+calendars:
+  - name: "Personal"
+    url: "https://example.com/calendar.ics"
+    color: "#3b82f6"  # blue
+  # - name: "Work"
+  #   url: "https://company.com/calendar.ics"
+  #   color: "#ef4444"  # red
+
+# Display settings
+display:
+  first_day_of_week: "sunday"  # or "monday"
+  show_week_numbers: false
+  default_view: "month"  # month, week, agenda
+
+# Refresh settings
+refresh:
+  interval_minutes: 30
+  timeout_seconds: 30
+
+# Cache
+cache:
+  db_path: "data/events.db"
+  retention_days: 90

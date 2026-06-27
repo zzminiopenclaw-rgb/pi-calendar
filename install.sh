@@ -1,61 +1,36 @@
 #!/bin/bash
-# Pi Calendar Installation Script
+# Quick fix script - run this on the Pi
 
 set -e
-
-CALENDAR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 USER_NAME="${SUDO_USER:-$USER}"
+CALENDAR_DIR="/home/${USER_NAME}/pi-calendar"
 
-echo "=== Pi Calendar Installer ==="
-echo "Installing for user: $USER_NAME"
+echo "=== Fixing Pi Calendar Autologin ==="
+echo "User: $USER_NAME"
 echo "Directory: $CALENDAR_DIR"
 
-# Check if running as root for systemd
-if [ "$EUID" -ne 0 ]; then 
-    echo "Please run with sudo: sudo ./install.sh"
-    exit 1
-fi
+# 1. Create autologin override directory
+sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
 
-# Install system dependencies
-echo "Installing system dependencies..."
-apt-get update
-apt-get install -y python3-venv python3-pip
+# 2. Write autologin config (line by line, no heredoc)
+echo "Creating autologin override..."
+echo '[Service]' | sudo tee /etc/systemd/system/getty@tty1.service.d/override.conf > /dev/null
+echo 'ExecStart=' | sudo tee -a /etc/systemd/system/getty@tty1.service.d/override.conf > /dev/null
+echo "ExecStart=-/sbin/agetty --autologin ${USER_NAME} --noclear %I \$TERM" | sudo tee -a /etc/systemd/system/getty@tty1.service.d/override.conf > /dev/null
 
-# Create virtual environment
-echo "Creating Python virtual environment..."
-cd "$CALENDAR_DIR"
-sudo -u "$USER_NAME" python3 -m venv .venv
+# 3. Create .bash_profile (line by line)
+echo "Creating .bash_profile..."
+echo '# Auto-start pi-calendar on TTY1' > /home/${USER_NAME}/.bash_profile
+echo 'if [[ "$(tty)" == "/dev/tty1" ]]; then' >> /home/${USER_NAME}/.bash_profile
+echo "    cd ${CALENDAR_DIR}" >> /home/${USER_NAME}/.bash_profile
+echo '    source .venv/bin/activate' >> /home/${USER_NAME}/.bash_profile
+echo '    python -m src.main' >> /home/${USER_NAME}/.bash_profile
+echo 'fi' >> /home/${USER_NAME}/.bash_profile
 
-# Install Python packages
-echo "Installing Python packages..."
-sudo -u "$USER_NAME" "${CALENDAR_DIR}/.venv/bin/pip" install -r requirements.txt
-
-# Create data directory
-mkdir -p "${CALENDAR_DIR}/data"
-chown -R "$USER_NAME:$USER_NAME" "${CALENDAR_DIR}/data"
-
-# Install systemd service
-echo "Installing systemd service..."
-sed "s|%I|${USER_NAME}|g" "${CALENDAR_DIR}/systemd/pi-calendar.service" > /etc/systemd/system/pi-calendar.service
-
-# Reload and enable systemd
-systemctl daemon-reload
-systemctl enable pi-calendar.service
+# 4. Reload systemd
+echo "Reloading systemd..."
+sudo systemctl daemon-reload
 
 echo ""
-echo "=== Installation Complete ==="
-echo ""
-echo "Next steps:"
-echo "1. Edit ${CALENDAR_DIR}/config/calendar.yaml"
-echo "   Add your iCal URLs"
-echo ""
-echo "2. Start the calendar:"
-echo "   sudo systemctl start pi-calendar"
-echo ""
-echo "3. Check status:"
-echo "   sudo systemctl status pi-calendar"
-echo ""
-echo "4. View logs:"
-echo "   sudo journalctl -u pi-calendar -f"
-echo ""
-echo "The calendar will auto-start on boot."
+echo "=== Fix Applied ==="
+echo "Reboot to test: sudo reboot"

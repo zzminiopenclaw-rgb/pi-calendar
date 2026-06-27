@@ -17,7 +17,7 @@ git clone https://github.com/zzminiopenclaw-rgb/pi-calendar.git
 cd pi-calendar
 
 # Run setup (installs deps + configures auto-start on display)
-sudo ./fix-autologin.sh
+sudo ./install.sh
 
 # Configure your calendars
 nano config/calendar.yaml
@@ -142,7 +142,7 @@ export TERMINFO=/lib/terminfo
 │   └── widgets/          # UI widgets
 ├── config/               # Configuration
 ├── data/                 # SQLite cache (gitignored)
-├── fix-autologin.sh     # Auto-start on TTY1 setup
+├── install.sh           # Auto-start on TTY1 setup
 ├── restart.sh           # Quick restart script
 └── README.md
 ```

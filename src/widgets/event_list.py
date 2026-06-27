@@ -6,10 +6,11 @@ from textual.reactive import reactive
 
 
 class EventList(Static):
-    """Display list of events for selected date."""
-    
-    events = reactive([])
-    selected_date = reactive(datetime.now())
+    def __init__(self, theme=None, **kwargs):
+        super().__init__(**kwargs)
+        self.theme = theme
+        self.events = reactive([])
+        self.selected_date = reactive(datetime.now())
     
     def compose(self):
         yield Static("Events", id="events-header")

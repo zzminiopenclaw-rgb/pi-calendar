@@ -11,9 +11,10 @@ class CalendarMonthView(Static):
     current_date = reactive(datetime.now())
     events = reactive([])
     
-    def __init__(self, first_weekday: int = 6, **kwargs):  # 6 = Sunday
+    def __init__(self, first_weekday: int = 6, theme=None, **kwargs):  # 6 = Sunday
         super().__init__(**kwargs)
         self.first_weekday = first_weekday  # 0=Mon, 6=Sun
+        self.theme = theme
         self._event_map: Dict[str, List[Dict]] = {}
     
     def compose(self):
@@ -93,8 +94,15 @@ class CalendarMonthView(Static):
             events = self._event_map.get(date_key, [])
             
             # Format cell: day number + event indicators
+            if self.theme:
+                event_char = self.theme.get_style("event_indicator", "·")
+                today_shape = self.theme.get_style("today_shape", "◆")
+            else:
+                event_char = "·"
+                today_shape = "◆"
+            
             if events:
-                dots = "·" * min(len(events), 3)  # Max 3 dots
+                dots = event_char * min(len(events), 3)  # Max 3 indicators
                 cell = f"{day:2d}\n{dots}"
             else:
                 cell = f"{day:2d}"
@@ -102,7 +110,10 @@ class CalendarMonthView(Static):
             # Highlight today
             today = datetime.now()
             if today.year == year and today.month == month and today.day == day:
-                cell = f"[bold cyan]{cell}[/]"
+                if self.theme:
+                    cell = f"[bold {self.theme.get_color('today_bg')[1:]}]{today_shape} {day}[/]"
+                else:
+                    cell = f"[bold cyan]{today_shape} {day}[/]"
             
             current_row.append(cell)
             

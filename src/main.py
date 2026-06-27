@@ -1,5 +1,4 @@
 """Pi Calendar TUI - Main entry point."""
-import asyncio
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +13,8 @@ from src.cache import EventCache
 from src.event_fetcher import EventFetcher
 from src.calendar_view import CalendarMonthView
 from src.widgets.event_list import EventList
+from src.theme import Theme
+from src.headers import get_header
 
 # Setup logging
 log_path = Path(__file__).parent.parent / "data" / "calendar.log"
@@ -34,42 +35,7 @@ class PiCalendarApp(App):
     """Main calendar application."""
     
     CSS = """
-    Screen {
-        align: center middle;
-    }
-    
-    #main-container {
-        width: 100%;
-        height: 100%;
-    }
-    
-    #calendar-panel {
-        width: 70%;
-        height: 100%;
-        border: solid green;
-    }
-    
-    #sidebar {
-        width: 30%;
-        height: 100%;
-        border: solid blue;
-    }
-    
-    #events-header {
-        height: 3;
-        content-align: center middle;
-        text-style: bold;
-    }
-    
-    DataTable {
-        width: 100%;
-        height: 100%;
-    }
-    
-    ListView {
-        width: 100%;
-        height: 1fr;
-    }
+    /* Theme CSS will be injected at runtime */
     """
     
     BINDINGS = [
@@ -84,6 +50,7 @@ class PiCalendarApp(App):
     config = None
     cache = None
     fetcher = None
+    theme = None
     all_events = reactive([])
     
     def __init__(self, config_path: str = "config/calendar.yaml"):
@@ -91,23 +58,40 @@ class PiCalendarApp(App):
         self.config = Config(config_path)
         self.cache = EventCache(self.config.cache_db_path)
         self.fetcher = EventFetcher(self.cache, self.config._data.get("refresh", {}).get("timeout_seconds", 30))
+        self.theme = Theme()
+        # Inject theme CSS
+        self.CSS = self.theme.generate_css()
     
     def compose(self) -> ComposeResult:
+        # ASCII Art Header
+        header_art = get_header(self.theme.get_style("header_art", "simple"))
+        yield Static(header_art, id="ascii-header")
+        
         yield Header(show_clock=True)
         
         with Horizontal(id="main-container"):
             with Vertical(id="calendar-panel"):
                 first_day = 6 if self.config.display.get("first_day_of_week", "sunday") == "sunday" else 0
-                yield CalendarMonthView(first_weekday=first_day, id="calendar")
+                yield CalendarMonthView(
+                    first_weekday=first_day,
+                    theme=self.theme,
+                    id="calendar"
+                )
             
             with Vertical(id="sidebar"):
-                yield EventList(id="event-list")
+                yield EventList(theme=self.theme, id="event-list")
         
         yield Footer()
     
     async def on_mount(self):
         """Initialize and load events."""
-        self.title = "Pi Calendar"
+        self.title = self.theme.name
+        self.sub_title = "Pi Calendar"
+        
+        # Style the ASCII header
+        header = self.query_one("#ascii-header", Static)
+        header.styles.color = self.theme.get_color("primary")
+        header.styles.text_align = "center"
         
         # Validate config
         errors = self.config.validate()
@@ -133,8 +117,13 @@ class PiCalendarApp(App):
                     cal["url"]
                 )
                 # Tag events with calendar color
+                cal_color = cal.get("color")
+                if not cal_color:
+                    # Use theme calendar colors
+                    idx = self.config.calendars.index(cal) % len(self.theme.calendar_colors)
+                    cal_color = self.theme.calendar_colors[idx]
                 for event in events:
-                    event["color"] = cal.get("color", "#ffffff")
+                    event["color"] = cal_color
                 all_events.extend(events)
                 logger.info(f"Loaded {len(events)} events from {cal['name']}")
             except Exception as e:
@@ -185,6 +174,8 @@ class PiCalendarApp(App):
         h           Show this help
         
         The calendar auto-refreshes every 30 minutes.
+        
+        Theme: """ + self.theme.name + """
         """
         self.notify(help_text, title="Help", timeout=10)
 

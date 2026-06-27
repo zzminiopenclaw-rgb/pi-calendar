@@ -6,6 +6,11 @@ After=network.target
 Type=simple
 User=%I
 WorkingDirectory=/home/%I/pi-calendar
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
 Environment="PYTHONUNBUFFERED=1"
 Environment="TERM=linux"
 Environment="TERMINFO=/lib/terminfo"

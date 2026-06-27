@@ -16,8 +16,8 @@ cd ~
 git clone https://github.com/zzminiopenclaw-rgb/pi-calendar.git
 cd pi-calendar
 
-# Install
-sudo ./install.sh
+# Run setup (installs deps + configures auto-start on display)
+sudo ./setup.sh
 
 # Configure your calendars
 nano config/calendar.yaml

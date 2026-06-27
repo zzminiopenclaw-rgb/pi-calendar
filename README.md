@@ -11,10 +11,10 @@ A lightweight TUI calendar display for Raspberry Pi Zero. No browser required.
 ## Quick Start
 
 ```bash
-# Clone/setup
+# Clone from GitHub
 cd ~
-mkdir -p pi-calendar && cd pi-calendar
-# (copy project files here)
+git clone https://github.com/zzminiopenclaw-rgb/pi-calendar.git
+cd pi-calendar
 
 # Install
 sudo ./install.sh

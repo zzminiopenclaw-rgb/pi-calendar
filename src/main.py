@@ -9,11 +9,11 @@ from textual.widgets import Header, Footer, Static
 from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 
-from config import Config
-from cache import EventCache
-from event_fetcher import EventFetcher
-from calendar_view import CalendarMonthView
-from widgets.event_list import EventList
+from src.config import Config
+from src.cache import EventCache
+from src.event_fetcher import EventFetcher
+from src.calendar_view import CalendarMonthView
+from src.widgets.event_list import EventList
 
 # Setup logging
 log_path = Path(__file__).parent.parent / "data" / "calendar.log"

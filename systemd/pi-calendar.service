@@ -9,6 +9,7 @@ WorkingDirectory=/home/%I/pi-calendar
 Environment="PYTHONUNBUFFERED=1"
 Environment="TERM=linux"
 Environment="TERMINFO=/lib/terminfo"
+Environment="PYTHONPATH=/home/%I/pi-calendar"
 
 # Run the calendar in the foreground
 ExecStart=/home/%I/pi-calendar/.venv/bin/python -m src.main

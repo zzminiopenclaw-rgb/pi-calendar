@@ -17,14 +17,16 @@ git clone https://github.com/zzminiopenclaw-rgb/pi-calendar.git
 cd pi-calendar
 
 # Run setup (installs deps + configures auto-start on display)
-sudo ./setup.sh
+sudo ./fix-autologin.sh
 
 # Configure your calendars
 nano config/calendar.yaml
 
-# Start
-sudo systemctl start pi-calendar
+# Reboot to start on display
+sudo reboot
 ```
+
+After reboot, the calendar appears on TTY1 (the physical display). SSH in separately to configure.
 
 ---
 
@@ -63,22 +65,20 @@ refresh:
 
 ---
 
-## Systemd Commands
+## Restarting After Code Updates
 
 ```bash
-# Start/stop
-sudo systemctl start pi-calendar
-sudo systemctl stop pi-calendar
-
-# Auto-start on boot
-sudo systemctl enable pi-calendar
-
-# View logs
-sudo journalctl -u pi-calendar -f
-
-# Check status
-sudo systemctl status pi-calendar
+cd ~/pi-calendar
+git pull
+./restart.sh
 ```
+
+Or manually:
+```bash
+sudo pkill -f "src.main"
+```
+
+Wait 5 seconds, then calendar auto-restarts on TTY1.
 
 ---
 
@@ -109,11 +109,15 @@ Display: HDMI monitor or PiTFT (auto-detected TTY)
 
 **Calendar not starting:**
 ```bash
-# Check logs
-sudo journalctl -u pi-calendar -n 50
+# Check if process is running
+ps aux | grep src.main
+
+# Check logs in data/calendar.log
+cat ~/pi-calendar/data/calendar.log
 
 # Verify config
-sudo -u pi /home/pi/pi-calendar/.venv/bin/python -c "from src.config import Config; c = Config(); print(c.validate())"
+source ~/pi-calendar/.venv/bin/activate
+python -c "from src.config import Config; c = Config(); print(c.validate())"
 ```
 
 **Display issues on TTY:**
@@ -138,10 +142,9 @@ export TERMINFO=/lib/terminfo
 │   └── widgets/          # UI widgets
 ├── config/               # Configuration
 ├── data/                 # SQLite cache (gitignored)
-├── systemd/              # Systemd service
-├── tests/                # Unit tests
-├── requirements.txt      # Python deps
-└── install.sh            # One-command install
+├── fix-autologin.sh     # Auto-start on TTY1 setup
+├── restart.sh           # Quick restart script
+└── README.md
 ```
 
 ---

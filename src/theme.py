@@ -21,6 +21,7 @@ DEFAULT_THEME = {
         "calendar_bg": "#0a0a0f",
         "calendar_fg": "#e0e0e0",
         "grid_lines": "#1a1a2e",
+        "muted": "#666666",  # Added missing color
     },
     "calendar_colors": ["#00f0ff", "#ff00ff", "#ffaa00", "#00ff88"],
     "style": {
@@ -58,7 +59,7 @@ class Theme:
     
     @property
     def name(self) -> str:
-        return self._theme.get("name", "Unknown")
+        return self._theme.get("name", "Default")
     
     @property
     def colors(self) -> Dict[str, str]:

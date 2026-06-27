@@ -58,8 +58,8 @@ class PiCalendarApp(App):
         css_path = Path(__file__).parent / "theme_generated.css"
         css_path.write_text(css_content)
         
-        # Initialize app with CSS path
-        super().__init__(css_path=str(css_path))
+        # Initialize app with CSS path AND a valid Textual theme
+        super().__init__(css_path=str(css_path), theme="textual-dark")
         
         self.config = Config(config_path)
         self.cache = EventCache(self.config.cache_db_path)

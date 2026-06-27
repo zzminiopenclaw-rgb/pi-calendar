@@ -50,11 +50,11 @@ class PiCalendarApp(App):
     all_events = reactive([])
     
     def __init__(self, config_path: str = "config/calendar.yaml"):
-        # Load theme first
-        self.theme = Theme()
+        # Load our custom theme first (before Textual init)
+        self.app_theme = Theme()
         
         # Generate CSS and save to temp file for Textual to load
-        css_content = self.theme.generate_css()
+        css_content = self.app_theme.generate_css()
         css_path = Path(__file__).parent / "theme_generated.css"
         css_path.write_text(css_content)
         
@@ -67,7 +67,7 @@ class PiCalendarApp(App):
     
     def compose(self) -> ComposeResult:
         # ASCII Art Header
-        header_art = get_header(self.theme.get_style("header_art", "simple"))
+        header_art = get_header(self.app_theme.get_style("header_art", "simple"))
         yield Static(header_art, id="ascii-header")
         
         yield Header(show_clock=True)
@@ -77,23 +77,23 @@ class PiCalendarApp(App):
                 first_day = 6 if self.config.display.get("first_day_of_week", "sunday") == "sunday" else 0
                 yield CalendarMonthView(
                     first_weekday=first_day,
-                    theme=self.theme,
+                    theme=self.app_theme,
                     id="calendar"
                 )
             
             with Vertical(id="sidebar"):
-                yield EventList(theme=self.theme, id="event-list")
+                yield EventList(theme=self.app_theme, id="event-list")
         
         yield Footer()
     
     async def on_mount(self):
         """Initialize and load events."""
-        self.title = self.theme.name
+        self.title = self.app_theme.name
         self.sub_title = "Pi Calendar"
         
         # Style the ASCII header
         header = self.query_one("#ascii-header", Static)
-        header.styles.color = self.theme.get_color("primary")
+        header.styles.color = self.app_theme.get_color("primary")
         header.styles.text_align = "center"
         
         # Validate config
@@ -123,8 +123,8 @@ class PiCalendarApp(App):
                 cal_color = cal.get("color")
                 if not cal_color:
                     # Use theme calendar colors
-                    idx = self.config.calendars.index(cal) % len(self.theme.calendar_colors)
-                    cal_color = self.theme.calendar_colors[idx]
+                    idx = self.config.calendars.index(cal) % len(self.app_theme.calendar_colors)
+                    cal_color = self.app_theme.calendar_colors[idx]
                 for event in events:
                     event["color"] = cal_color
                 all_events.extend(events)
@@ -178,7 +178,7 @@ class PiCalendarApp(App):
         
         The calendar auto-refreshes every 30 minutes.
         
-        Theme: """ + self.theme.name + """
+        Theme: """ + self.app_theme.name + """
         """
         self.notify(help_text, title="Help", timeout=10)
 

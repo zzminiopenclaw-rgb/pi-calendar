@@ -16,7 +16,7 @@ cd ~
 git clone https://github.com/zzminiopenclaw-rgb/pi-calendar.git
 cd pi-calendar
 
-# Run setup (installs deps + configures auto-start on display)
+# Run full installation (creates venv, installs deps, configures autologin)
 sudo ./install.sh
 
 # Configure your calendars
@@ -49,6 +49,27 @@ display:
 
 refresh:
   interval_minutes: 30
+```
+
+---
+
+## Updating
+
+To get the latest code and restart:
+
+```bash
+cd ~/pi-calendar
+git pull
+./restart.sh
+```
+
+If dependencies changed (new packages in requirements.txt), reinstall:
+
+```bash
+cd ~/pi-calendar
+source .venv/bin/activate
+pip install -r requirements.txt
+./restart.sh
 ```
 
 ---

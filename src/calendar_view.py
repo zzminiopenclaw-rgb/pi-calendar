@@ -62,7 +62,7 @@ class CalendarMonthView(Static):
         table.clear()
         
         # Ensure columns exist (they may get cleared)
-        if table.column_count == 0:
+        if len(table.columns) == 0:
             table.add_columns("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
         
         year = self.current_date.year

@@ -61,6 +61,10 @@ class CalendarMonthView(Static):
         table = self.query_one(DataTable)
         table.clear()
         
+        # Ensure columns exist (they may get cleared)
+        if table.column_count == 0:
+            table.add_columns("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+        
         year = self.current_date.year
         month = self.current_date.month
         

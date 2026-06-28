@@ -49,20 +49,24 @@ echo "Step 5/5: Configuring auto-start on display..."
 
 # Create autologin override
 mkdir -p /etc/systemd/system/getty@tty1.service.d
-cat > /etc/systemd/system/getty@tty1.service.d/override.conf <>EOF
+cat > /etc/systemd/system/getty@tty1.service.d/override.conf << EOF
 [Service]
 ExecStart=
-ExecStart=-/sbin/agetty --autologin ${USER_NAME} --noclear %I \$TERM
+ExecStart=-/sbin/agetty --autologin ${USER_NAME} --skip-login --noclear %I \$TERM
 EOF
 
-# Create .bash_profile launcher
+# Create .bash_profile launcher with respawn loop
 BASH_PROFILE="/home/${USER_NAME}/.bash_profile"
-cat > "$BASH_PROFILE" <>EOF
+cat > "$BASH_PROFILE" << EOF
 # Auto-start pi-calendar on TTY1
 if [[ "\$(tty)" == "/dev/tty1" ]]; then
-    cd ${CALENDAR_DIR}
-    source .venv/bin/activate
-    python -m src.main
+    while true; do
+        cd ${CALENDAR_DIR}
+        source .venv/bin/activate
+        python -m src.main 2>> data/calendar.log || true
+        echo "Calendar crashed, restarting in 5 seconds..." >> data/calendar.log
+        sleep 5
+    done
 fi
 EOF
 
